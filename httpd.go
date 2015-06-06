@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.google.com/p/gcfg"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,26 +9,23 @@ import (
 )
 
 type ConfigFile struct {
-	file   string
-	Config gcfg
-}
-
-type ConfigSetting struct {
-	key   string
-	value string
+	file    string
+	Content []byte
 }
 
 func (cf *ConfigFile) load(fileName string) (bool, error) {
+	var dat map[string]interface{}
 	body, err := ioutil.ReadFile(fileName)
 
 	if err != nil {
 		return false, err
 	}
 
-	cf.Content = body
-
-	cf.Config.ReadInto()
-
+	err = json.Unmarshal(body, &dat)
+	if err != nil {
+		return false, err
+	}
+	fmt.Println(dat["localhost"])
 	return true, nil
 }
 
@@ -51,6 +48,6 @@ func initConfig() (*ConfigFile, error) {
 	}
 
 	cf := ConfigFile{file: *configPath}
-
+	cf.load(cf.file)
 	return &cf, nil
 }
